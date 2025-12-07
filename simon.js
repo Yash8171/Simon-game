@@ -25,6 +25,9 @@ const gameButtons = document.querySelectorAll(".btn");
 const nameModal = document.getElementById("nameModal");
 const playerNameInput = document.getElementById("playerNameInput");
 const saveScoreBtn = document.getElementById("saveScoreBtn");
+const closeModalBtn = document.getElementById("closeModal");
+const captchaQuestion = document.getElementById("captchaQuestion");
+const captchaInput = document.getElementById("captchaInput");
 
 // 🔹 Game Variables
 let gameSeq = [];
@@ -32,8 +35,11 @@ let userSeq = [];
 const btns = ["yellow", "red", "purple", "green"];
 let started = false;
 let level = 0;
-let finalLevel = 0; // ✅ store the last completed level
+let finalLevel = 0; // store the last completed level
 let acceptingInput = false;
+
+// 🔹 CAPTCHA variable
+let captchaAnswer = 0;
 
 // 🔹 High Score
 let highScore = Number(localStorage.getItem("highScore")) || 0;
@@ -125,6 +131,17 @@ function btnPress() {
 
 gameButtons.forEach(btn => btn.addEventListener("click", btnPress));
 
+// 🔹 Generate CAPTCHA
+function generateCaptcha() {
+  const a = Math.floor(Math.random() * 10) + 1; // 1–10
+  const b = Math.floor(Math.random() * 10) + 1;
+  const op = Math.random() > 0.5 ? "+" : "-";
+
+  captchaAnswer = op === "+" ? a + b : a - b;
+  captchaQuestion.innerText = `CAPTCHA: ${a} ${op} ${b} = ?`;
+  captchaInput.value = "";
+}
+
 // 🔹 Game Over
 function gameOver() {
   document.body.style.background = "red";
@@ -138,27 +155,29 @@ function gameOver() {
 
   gameButtons.forEach(btn => btn.style.pointerEvents = "none");
 
-  // ✅ Save last level before resetting
+  // Save last level
   finalLevel = level;
 
-  // ✅ High score
+  // High score
   if (finalLevel > highScore) {
     highScore = finalLevel;
     localStorage.setItem("highScore", highScore);
     highScoreText.innerText = highScore;
   }
 
-  // ✅ Show modal
+  // Show modal and generate CAPTCHA
   nameModal.style.display = "flex";
   playerNameInput.value = "";
   playerNameInput.focus();
+  generateCaptcha();
 
-  statusText.innerText = "❌ Game Over — Save your score";
+  statusText.innerText = "❌ Game Over — Solve CAPTCHA & Save your score";
 }
 
-// ✅ Save Score Button
+// ✅ Save Score Button with CAPTCHA check
 saveScoreBtn.addEventListener("click", () => {
   const playerName = playerNameInput.value.trim();
+  const captchaVal = Number(captchaInput.value.trim());
 
   if (!playerName) {
     alert("Please enter your name");
@@ -170,6 +189,12 @@ saveScoreBtn.addEventListener("click", () => {
     return;
   }
 
+  if (captchaVal !== captchaAnswer) {
+    alert("Incorrect CAPTCHA! Try again.");
+    generateCaptcha();
+    return;
+  }
+
   if (finalLevel > 9999) {
     alert("Invalid score!");
     return;
@@ -177,30 +202,21 @@ saveScoreBtn.addEventListener("click", () => {
 
   db.collection("leaderboard").add({
     name: playerName,
-    score: finalLevel, // ✅ Use finalLevel instead of level
+    score: finalLevel,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 
-  // ✅ Close modal
   nameModal.style.display = "none";
-
-  // ✅ Reset game
   reset();
-
-  // ✅ Show Start button again
   startBtn.style.display = "inline-block";
-
-  // ✅ Update status text
   statusText.innerText = "✅ Score saved! Click Start to play again";
 });
 
 // 🔹 Close modal without saving
-const closeModalBtn = document.getElementById("closeModal");
-
 closeModalBtn.addEventListener("click", () => {
-  nameModal.style.display = "none"; // hide modal
-  reset(); // reset game state
-  startBtn.style.display = "inline-block"; // show start button
+  nameModal.style.display = "none";
+  reset();
+  startBtn.style.display = "inline-block";
   statusText.innerText = "❌ Score not saved. Click Start to play again";
 });
 

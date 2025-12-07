@@ -168,6 +168,20 @@ h1 {
   cursor: pointer;
 }
 
+#captchaQuestion {
+  margin: 10px 0 5px;
+  font-weight: bold;
+  color: #ffc83d;
+}
+
+#captchaInput {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+}
 
 /* Close button inside modal */
 .close {
