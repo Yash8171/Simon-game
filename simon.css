@@ -1,33 +1,188 @@
-body{
-    text-align: center;
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #1f1c2c, #928dab);
+  color: white;
+  text-align: center;
+  margin: 0;
 }
-.btn{
-    height: 200px;
-    width: 200px;
-    border-radius: 20%;
-    border: 10px solid black;
-    margin: 2rem;
+
+.game-container {
+  padding: 20px;
 }
-.btn-container{
-    display: flex;
-    justify-content: center;
+
+h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
 }
-.yellow{
-    background-color: #f99b45;
+
+.score-board {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
 }
-.red{
-    background-color: #d95980;
+
+.btn-container {
+  display: grid;
+  grid-template-columns: repeat(2, 160px);
+  gap: 20px;
+  justify-content: center;
+  margin: 20px auto;
 }
-.purple{
-    background-color: #819ff9;
+
+.btn {
+  height: 160px;
+  width: 160px;
+  border-radius: 20px;
+  border: 5px solid #000;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  cursor: pointer;
 }
-.green{
-    background-color: #63aac0;
+
+.btn:active {
+  transform: scale(0.95);
 }
-.flash{
-    background-color: white;
+
+.red { background: #ff4c4c; }
+.yellow { background: #ffc83d; }
+.green { background: #4cff4c; }
+.purple { background: #9b59b6; }
+
+.flash {
+  background-color: white !important;
+  box-shadow: 0 0 20px white;
 }
-.userFlash{
-    background-color: green;
+
+.userFlash {
+  box-shadow: 0 0 20px #0f0;
 }
-  
+
+.leaderboard {
+  margin-top: 20px;
+  background: rgba(0,0,0,0.4);
+  padding: 15px;
+  border-radius: 15px;
+  width: 260px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ✅ Remove default bullets */
+#leaderboardList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* ✅ Each row styling */
+#leaderboardList li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.1);
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+/* ✅ Rank style (1,2,3...) */
+.leaderboard-rank {
+  font-weight: bold;
+  color: #ffc83d;
+  margin-right: 8px;
+}
+
+/* ✅ Name style */
+.leaderboard-name {
+  flex: 1;
+  text-align: left;
+}
+
+/* ✅ Score style */
+.leaderboard-score {
+  font-weight: bold;
+  color: #4cff4c;
+}
+
+#startBtn {
+  padding: 12px 25px;
+  font-size: 1.2rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  background-color: #ffc83d;
+  color: #000;
+  margin-bottom: 15px;
+}
+
+#startBtn:active {
+  transform: scale(0.95);
+}
+
+/* 🔹 Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  position: relative; /* needed for positioning the button inside */
+  background: #1f1c2c;
+  padding: 20px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 300px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+.modal-content h3 {
+  margin: 0 0 10px;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+}
+
+.modal-content button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #4cff4c;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+
+/* Close button inside modal */
+.close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #ff4c4c;
+}
+

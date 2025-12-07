@@ -1,81 +1,251 @@
-let gameSeq=[];
-let userSeq=[];
+// 🔹 Firebase Config (SAFE FRONTEND CONFIG)
+const firebaseConfig = {
+  apiKey: "AIzaSyD89MCfg8arQOsjKf5V0zGDFIsMc4kvZWE",
+  authDomain: "simon-game-yks.firebaseapp.com",
+  projectId: "simon-game-yks",
+  storageBucket: "simon-game-yks.firebasestorage.app",
+  messagingSenderId: "451116089108",
+  appId: "1:451116089108:web:1eb5926fe265f5b30f0c01",
+  measurementId: "G-LZC4RVKTBY"
+};
 
-let btns=["yellow","red","purple","green"];
+// ✅ Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-let started=false;
-let level=0;
+// 🔹 Elements
+const statusText = document.getElementById("status");
+const levelText = document.getElementById("level");
+const highScoreText = document.getElementById("highScore");
+const leaderboardList = document.getElementById("leaderboardList");
+const startBtn = document.getElementById("startBtn");
+const gameButtons = document.querySelectorAll(".btn");
 
-let h2=document.querySelector("h2");
+// 🔹 Modal Elements
+const nameModal = document.getElementById("nameModal");
+const playerNameInput = document.getElementById("playerNameInput");
+const saveScoreBtn = document.getElementById("saveScoreBtn");
 
-document.addEventListener("keypress",function(){
-    if(started==false){
-        console.log("Game is Started");
-        started=true;
-        levelUp();
-    };
+// 🔹 Game Variables
+let gameSeq = [];
+let userSeq = [];
+const btns = ["yellow", "red", "purple", "green"];
+let started = false;
+let level = 0;
+let finalLevel = 0; // ✅ store the last completed level
+let acceptingInput = false;
+
+// 🔹 High Score
+let highScore = Number(localStorage.getItem("highScore")) || 0;
+highScoreText.innerText = highScore;
+
+// 🔹 Disable buttons initially
+gameButtons.forEach(btn => btn.style.pointerEvents = "none");
+
+// ✅ Start Game
+function startGame() {
+  if (started) return;
+
+  started = true;
+  acceptingInput = false;
+  resetGame();
+  levelUp();
+
+  statusText.innerText = "Game Started!";
+  startBtn.style.display = "none";
+
+  gameButtons.forEach(btn => btn.style.pointerEvents = "auto");
+}
+
+// ✅ Start via keyboard
+document.addEventListener("keypress", () => {
+  if (!started) startGame();
 });
 
-function gameFlash(btn){
-    btn.classList.add("flash");
-    setTimeout(function(){
-        btn.classList.remove("flash");
-    },250);
+// ✅ Start via button
+startBtn.addEventListener("click", startGame);
+
+// 🔹 Button flash
+function gameFlash(btn) {
+  btn.classList.add("flash");
+  setTimeout(() => btn.classList.remove("flash"), 250);
 }
 
-function userFlash(btn){
-    btn.classList.add("userFlash");
-    setTimeout(function(){
-        btn.classList.remove("userFlash");
-    },250);
+function userFlash(btn) {
+  btn.classList.add("userFlash");
+  setTimeout(() => btn.classList.remove("userFlash"), 250);
 }
 
-function levelUp(){
-    userSeq=[];
-    level++;
-    h2.innerText=`Level ${level}`;
+// 🔹 Level Up
+function levelUp() {
+  acceptingInput = false;
+  userSeq = [];
+  level++;
 
-    let randIdx=Math.floor(Math.random()*3);
-    let randColor=btns[randIdx];
-    let randBtn=document.querySelector(`.${randColor}`);
+  levelText.innerText = level;
+  statusText.innerText = `Level ${level}`;
 
-    gameSeq.push(randColor);
-    console.log(gameSeq);
+  const randIdx = Math.floor(Math.random() * 4);
+  const randColor = btns[randIdx];
+  const randBtn = document.getElementById(randColor);
+
+  gameSeq.push(randColor);
+
+  setTimeout(() => {
     gameFlash(randBtn);
+    acceptingInput = true;
+  }, 500);
 }
 
-function checkAns(idx){
-    if(userSeq[idx]==gameSeq[idx]){
-        if(userSeq.length==gameSeq.length){
-            setTimeout(levelUp,1000);
-        }
-    } else{
-        h2.innerHTML=`Game Over! Your score was <b>${level}</b> <br>Press any key to start again`;
-        document.querySelector("body").style.backgroundColor="red";
-        setTimeout(function(){
-            document.querySelector("body").style.backgroundColor="white";
-        },150);
-        reset();
+// 🔹 Check Answer
+function checkAns(idx) {
+  if (!started || !acceptingInput) return;
+
+  if (userSeq[idx] === gameSeq[idx]) {
+    if (userSeq.length === gameSeq.length) {
+      setTimeout(levelUp, 800);
     }
+  } else {
+    gameOver();
+  }
 }
 
-function btnPress(){
-    console.log(this);
-    let btn=this;
-    userFlash(btn);
+// 🔹 Button Click
+function btnPress() {
+  if (!started || !acceptingInput) return;
 
-    userColor=btn.getAttribute("id");
-    userSeq.push(userColor);
+  const btn = this;
+  userFlash(btn);
 
-    checkAns(userSeq.length-1);
+  const color = btn.id;
+  userSeq.push(color);
+
+  checkAns(userSeq.length - 1);
 }
-let allBtns=document.querySelectorAll(".btn");
-for(btn of allBtns){
-    btn.addEventListener("click",btnPress)
+
+gameButtons.forEach(btn => btn.addEventListener("click", btnPress));
+
+// 🔹 Game Over
+function gameOver() {
+  document.body.style.background = "red";
+
+  setTimeout(() => {
+    document.body.style.background = "linear-gradient(135deg, #1f1c2c, #928dab)";
+  }, 200);
+
+  started = false;
+  acceptingInput = false;
+
+  gameButtons.forEach(btn => btn.style.pointerEvents = "none");
+
+  // ✅ Save last level before resetting
+  finalLevel = level;
+
+  // ✅ High score
+  if (finalLevel > highScore) {
+    highScore = finalLevel;
+    localStorage.setItem("highScore", highScore);
+    highScoreText.innerText = highScore;
+  }
+
+  // ✅ Show modal
+  nameModal.style.display = "flex";
+  playerNameInput.value = "";
+  playerNameInput.focus();
+
+  statusText.innerText = "❌ Game Over — Save your score";
 }
-function reset(){
-    started=false;
-    gameSeq=[];
-    userSeq=[];
-    level=0;
+
+// ✅ Save Score Button
+saveScoreBtn.addEventListener("click", () => {
+  const playerName = playerNameInput.value.trim();
+
+  if (!playerName) {
+    alert("Please enter your name");
+    return;
+  }
+
+  if (playerName.length > 20) {
+    alert("Max 20 characters allowed!");
+    return;
+  }
+
+  if (finalLevel > 9999) {
+    alert("Invalid score!");
+    return;
+  }
+
+  db.collection("leaderboard").add({
+    name: playerName,
+    score: finalLevel, // ✅ Use finalLevel instead of level
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  // ✅ Close modal
+  nameModal.style.display = "none";
+
+  // ✅ Reset game
+  reset();
+
+  // ✅ Show Start button again
+  startBtn.style.display = "inline-block";
+
+  // ✅ Update status text
+  statusText.innerText = "✅ Score saved! Click Start to play again";
+});
+
+// 🔹 Close modal without saving
+const closeModalBtn = document.getElementById("closeModal");
+
+closeModalBtn.addEventListener("click", () => {
+  nameModal.style.display = "none"; // hide modal
+  reset(); // reset game state
+  startBtn.style.display = "inline-block"; // show start button
+  statusText.innerText = "❌ Score not saved. Click Start to play again";
+});
+
+// 🔹 Reset
+function reset() {
+  started = false;
+  acceptingInput = false;
+  gameSeq = [];
+  userSeq = [];
+  level = 0;
+  finalLevel = 0;
+  levelText.innerText = 0;
 }
+
+function resetGame() {
+  gameSeq = [];
+  userSeq = [];
+  level = 0;
+  levelText.innerText = 0;
+}
+
+// 🔹 Render Leaderboard
+function renderLeaderboard() {
+  db.collection("leaderboard")
+    .orderBy("score", "desc")
+    .limit(5)
+    .onSnapshot(snapshot => {
+      leaderboardList.innerHTML = "";
+      let index = 1;
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (!data.name || typeof data.score !== "number") return;
+
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span class="leaderboard-rank">${index}.</span>
+          <span class="leaderboard-name">${data.name}</span>
+          <span class="leaderboard-score">${data.score}</span>
+        `;
+        leaderboardList.appendChild(li);
+        index++;
+      });
+    });
+}
+
+// ✅ Load Leaderboard
+renderLeaderboard();
